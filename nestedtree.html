@@ -1,0 +1,113 @@
+<!--Mikipatel - 8622608-->
+
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../data/style.css">    
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.21.0/d3-legend.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>    
+    
+</head>
+<body>
+    <!-- tag styles -->
+    <ul>
+      <li><a class="active" href="line.html">World Cup</a></li>
+        <li><a href="line.html">Line Graph</a></li>    
+      <li><a href="piechart.html">PieChart</a></li>
+      <li><a href="map.html">Map</a></li>
+      <li><a href="nestedtree.html">NestedTree</a></li>
+      <li><a href="network.html">Network</a></li>    
+    </ul>
+    <div><h2>Tree for Countries won the matches in diferent series</h2></div> 
+    <div id="viz">
+      <svg style="width:1300px;height:700px;" ></svg>
+        
+    </div>
+     
+</body>
+    <script>
+        d3.json("../data/network.json", viz);
+    /* create function viz */
+    function viz(data) {
+      
+      var depthScale = d3.scaleOrdinal() /* create scale using ordinal scale */
+            .domain(["worldcup","Country Name","winning Year"])
+          .range(["skyblue","yellow","#93c464"]);
+        
+        var nestedData = d3.nest()
+          .key(d => d.parent)
+          .entries(data.worldcup);
+        
+        var packableData = {id: "worldcup", values: nestedData};
+        
+        var root = d3.hierarchy(packableData, d => d.values);
+        /* create var treechart */
+        var treeChart = d3.tree();
+        treeChart.size([1200,400]);
+        /* create var treedata */
+        var treeData = treeChart(root).descendants();
+        
+        /* create legend */
+        var legend = d3.legendColor().scale(depthScale) 
+        
+        
+        d3.select("svg")
+           .attr("width","1400px")
+           .append("g")
+           .attr("transform","translate(50,50)")
+           .call(legend);
+        
+        d3.select("svg")
+          .append("g")
+            .attr("id", "treeG")
+            .attr("transform", "translate(70,90)")
+          .selectAll("g")
+          .data(treeData)
+          .enter()
+          .append("g")
+            .attr("class", "node")
+            .attr("transform", d => `translate(${d.x},${d.y})`);
+        /* create circle */
+        d3.selectAll("g.node")
+          .append("circle")
+            .attr("r",1.85*treeData.length+5)
+            .style("fill", d => depthScale(d.depth))
+            .style("stroke", "black")
+            .style("stroke-width", "2px")
+             
+        
+        d3.selectAll("g.node")
+          .append("text")
+            .style("text-anchor", "middle")
+            .style("fill", "#4f442b")
+            .text(d => d.data.id || d.data.key || d.data.name);
+        
+        d3.select("#treeG").selectAll("line")
+          .data(treeData.filter(d => d.parent))
+          .enter().insert("line","g")
+            .attr("x1", d => d.parent.x)
+            .attr("y1", d => d.parent.y)
+            .attr("x2", d => d.x)
+            .attr("y2", d => d.y)
+            .style("stroke", "black"); 
+       /* using zooom */
+       treeZoom = d3.zoom();
+        treeZoom.on("zoom", zoomed);
+        d3.select("svg").call(treeZoom);
+        
+        function zoomed() {
+          console.log(d3.event);
+          d3.select("#treeG").attr("transform",
+            `translate(${d3.event.transform.x},${d3.event.transform.y})`);
+      }
+        
+    }
+        
+    </script>
+</html>

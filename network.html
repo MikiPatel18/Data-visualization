@@ -1,0 +1,146 @@
+<!--Mikipatel - 8622608-->
+
+<!doctype html>
+<html>
+  <head>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../data/style.css">    
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.21.0/d3-legend.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <style>
+    .node {
+      fill: #4F442B;
+    }
+
+    .link {
+      stroke: #93C464;
+    }
+    </style>
+  </head>
+  <body>
+          <ul>
+      <li><a class="active" href="line.html">World Cup</a></li>
+        <li><a href="line.html">Line Graph</a></li>    
+      <li><a href="piechart.html">PieChart</a></li>
+      <li><a href="map.html">Map</a></li>
+      <li><a href="nestedtree.html">NestedTree</a></li>
+      <li><a href="network.html">Network</a></li>    
+    </ul>
+      <div><h2>Network Graph for India with different Countries</h2></div> 
+
+    <div id="viz">
+      <svg style="width:1000px;height:500px;" ></svg>
+        <h1 class="bottomText"></h1>
+    </div>
+      
+        
+    
+  </body>
+    <script>
+      var roleScale = d3.scaleOrdinal()
+        .domain(["center", "connection"])
+        .range(["#75739F", "#41A368"]);
+    
+        /*  set up a promise to load the two csv files*/
+      var PromiseWrapper = d => new Promise(resolve => d3.csv(d, p => resolve(p)));
+      
+      Promise
+        .all([
+          PromiseWrapper("../data/nodelist1.csv"),
+          PromiseWrapper("../data/edgelist1.csv")
+        ])
+        .then(resolve => {
+          createForceLayout(resolve[0], resolve[1]);
+        });
+      
+        /*create a function called createForceLayout*/
+      function createForceLayout(nodes,edges) {
+        
+        /* code fragment which sets up a basic force directed effect */  
+        var nodeHash = {};
+        nodes.forEach(node => {
+          nodeHash[node.id] = node;
+        });
+        
+        edges.forEach(edge => {
+          
+          edge.source = nodeHash[edge.source];
+          edge.target = nodeHash[edge.target];
+        });
+        
+        var linkForce = d3.forceLink();
+        
+        var simulation = d3.forceSimulation()
+          .force("charge", d3.forceManyBody().strength(-3000))
+          .force("center", d3.forceCenter().x(800).y(300))
+          .force("link", linkForce)
+        
+          .nodes(nodes)
+          .on("tick", forceTick);
+        
+        simulation.force("link").links(edges);
+        /* append a line  */
+        d3.select("svg").selectAll("line.link")
+          .data(edges, d => `${d.source.id}-${d.target.id}`)
+          .enter()
+          .append("line")
+            .attr("class", "link")
+            
+            .style("opacity", .5)
+            .style("stroke-width", 15)
+            .on("click",movieDisplay);
+            
+        
+        var nodeEnter = d3.select("svg").selectAll("g.node")
+          .data(nodes, d => d.id)
+          .enter()
+          .append("g")
+            .attr("class", "node");
+        nodeEnter.append("circle")
+          .attr("r", 7)
+          .style("fill", d => roleScale(d.role));
+        nodeEnter.append("text")
+          .style("text-anchor", "middle") /* Append a text element to nodeEnter*/
+          .attr("y", 15)
+          .text(d => d.id);
+        
+          /* create a function forcetick */
+        function forceTick() {
+          d3.selectAll("line.link")
+            .attr("x1", d => d.source.x)
+            .attr("x2", d => d.target.x)
+            .attr("y1", d => d.source.y)
+            .attr("y2", d => d.target.y);
+          d3.selectAll("g.node")
+            .attr("transform", d => `translate(${d.x},${d.y})`);
+        }
+          /* functionality to drag the graph */
+          var drag = d3.drag()
+            drag
+            .on("drag", dragging)
+            function dragging(d) {
+            var e = d3.event
+            d.fx = e.x
+            d.fy = e.y
+            if (simulation.alpha() < 0.1) {
+            simulation.alpha(0.1)
+            simulation.restart()
+            }
+            }
+            d3.selectAll("g.node").call(drag);
+      }
+        /* create a function moviedisplay */
+        function movieDisplay(d){
+            d3.selectAll("h1.bottomText")
+            .text(d.film);
+            
+        }  
+      
+        
+    </script>
+</html>

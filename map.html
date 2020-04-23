@@ -1,0 +1,130 @@
+<!--Mikipatel - 8622608-->
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">  
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../data/style.css">    
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.21.0/d3-legend.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    
+  </head>
+  <body>
+      
+     <ul>
+      <li><a class="active" href="line.html">World Cup</a></li>
+        <li><a href="line.html">Line Graph</a></li>    
+      <li><a href="piechart.html">PieChart</a></li>
+      <li><a href="map.html">Map</a></li>
+      <li><a href="nestedtree.html">NestedTree</a></li>
+      <li><a href="network.html">Network</a></li>    
+    </ul>
+    <div><h2>Map for Countries location , runnerup , wins</h2></div>  
+    <div id="viz">
+      <svg style="width:1000px;height:500px;" ></svg>
+        
+    </div>
+      <div id="button">
+      <button name="locationButton" onClick="locations()">World Cup Location</button>
+      <button name="winnerButton" onClick="winners()">World Cup Winner</button>
+      <button name="runnerUpButton" onClick="runners()">World Cup RunnerUp</button>  
+      </div>
+      
+
+  </body>
+        <script>
+        let worldcupWinners=[];
+        let worldcupLocations=["Japan"];
+        let worldcupRunners=[];
+       /* Add D3 script to the html file */
+      var PromiseWrapper = (xhr, d) => new Promise(resolve => xhr(d, (p) => resolve(p)));
+
+        /* Load the json and csv */ 
+      Promise
+        .all([
+          PromiseWrapper(d3.json, "../data/world.geojson"),
+          PromiseWrapper(d3.csv, "../data/worldcup2.csv")
+        ])
+        .then(resolve => {
+          createMap(resolve[0], resolve[1]);
+        });
+
+        
+        /* Create a function called createMap */
+      function createMap(countries, worldCup) {
+          worldCup.forEach(data=>{
+              worldcupWinners.push(data.winner);
+              worldcupLocations.push(data.location);
+              worldcupRunners.push(data.runnerup);
+          });
+          
+        console.log(worldcupLocations,worldcupRunners,worldcupWinners);      
+          
+          
+          
+          
+    	 /* create a variable called aprojection */ 
+        var aprojection = d3.geoMercator()
+          .scale(70)
+          .translate([300, 300])
+            .center([0,0]);
+        
+          /* Create a variable called geopath */
+        var geoPath = d3.geoPath().projection(aprojection);
+        
+          /* select svg and selectall for path */
+        d3.select("svg").selectAll("path").data(countries.features)
+          .enter()
+          .append("path")
+            .attr("class", "country")
+            .attr("d", geoPath)
+            .style("fill","grey");
+        
+        }
+        /* make function called black */
+        function black(){
+            d3.select("svg")
+            .selectAll("path.country")
+            .style("fill","black");
+        }
+        
+        /* make function called winners */
+        function winners(){
+            black();
+            d3.select("svg")
+                .selectAll("path.country")
+                .filter(function(p,q){
+                console.log(p,q);
+                return worldcupWinners.indexOf(p.properties.name)>-1})
+                .style("fill","blue");
+            }
+        
+        /* make function called runners */
+        function runners(){
+            black();
+            d3.select("svg")
+                .selectAll("path.country")
+                .filter(function(p,q){
+                console.log(p,q);
+                return worldcupRunners.indexOf(p.properties.name)>-1})
+                .style("fill","skyblue");
+            }
+        
+        /* make function called locations */
+        function locations(){
+            black();
+            d3.select("svg")
+                .selectAll("path.country")
+                .filter(function(p,q){
+                console.log(p,q);
+                return worldcupLocations.indexOf(p.properties.name)>-1})
+                .style("fill","pink");
+            }
+        
+        
+    </script>
+</html>

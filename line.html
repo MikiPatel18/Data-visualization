@@ -1,0 +1,179 @@
+<!--Mikipatel - 8622608-->
+<!doctype html>
+<html>
+  <head>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="../data/style.css">    
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.21.0/d3-legend.min.js"></script>
+        <script src="https://d3js.org/d3.v4.js"></script>
+        <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    
+  </head>
+  <body>
+    <ul>
+      <li><a class="active" href="line.html">World Cup</a></li>
+        <li><a href="line.html">Line Graph</a></li>    
+      <li><a href="piechart.html">PieChart</a></li>
+      <li><a href="map.html">Map</a></li>
+      <li><a href="nestedtree.html">NestedTree</a></li>
+      <li><a href="network.html">Network</a></li>    
+    </ul>
+      <div><h2>Line Graph for Countries Qualify in Wins , Semifinals , Finals</h2></div>
+    <div id="viz">
+      <svg style="width:1000px;height:500px;" ></svg>
+        
+    </div>
+      
+  
+      
+  </body>
+    <script>
+        d3.csv("../data/worldcupdata.csv",lineChart);
+        function lineChart(data){
+            xScale = d3.scaleLinear().domain([1,10.5]).range([20,480]);
+            yScale = d3.scaleLinear().domain([0,35]).range([480,20]);
+            
+            var fillScale = d3.scaleOrdinal().domain(["Wins","semifinals","final"])
+            .range(["pink","blue","red"]);
+            
+            xAxis = d3.axisBottom()
+                .scale(xScale)
+                .tickSize(480)
+                .tickValues([1,2,3,4,5,6,7,8,9,10]);
+            d3.select("svg").append("g").attr("id","xAxisG").call(xAxis);
+            
+            yAxis = d3.axisRight()
+                .scale(yScale)
+                .ticks(10)
+                .tickSize(480);
+                
+            d3.select("svg").append("g").attr("id","yAxisG").call(yAxis);
+            
+            var legendA = d3.legendColor().scale(fillScale);
+            d3.select("svg")
+            .append("g")
+            .attr("transform","translate(600,0)")
+            .call(legendA);
+            
+            d3.select("svg").selectAll("circle.tweets")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("class","tweets")
+                .attr("r",10)
+                .attr("cx",d=>xScale(d.Rank))
+                .attr("cy",d=>yScale(d.Wins))
+                .style("fill","pink").on("mouseover",wins);
+            
+            d3.select("svg").selectAll("circle.retweets")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("class","retweets")
+                .attr("r",10)
+                .attr("cx",d=>xScale(d.Rank))
+                .attr("cy",d=>yScale(d.semifinals))
+                .style("fill","blue").on("mouseover",semifinals);
+            
+            d3.select("svg").selectAll("circle.favorites")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("class","favorites")
+                .attr("r",10)
+                .attr("cx",d=>xScale(d.Rank))
+                .attr("cy",d=>yScale(d.final))
+                .style("fill","red").on("mouseover",final);
+            
+            var div = d3.select("body").append("div")
+                .attr("class","tooltip")
+                .style("opacity",0);
+            
+            var tweetLine = d3.line()
+            .x(d=>xScale(d.Rank))
+            .y(d=>yScale(d.Wins));
+            
+            d3.select("svg")
+                .append("path")
+                .attr("d",tweetLine(data))
+                .attr("fill","none")
+                .attr("stroke","pink")
+                .attr("stroke-width",2);
+            
+            var tweetLine1 = d3.line()
+                .x(d=>xScale(d.Rank))
+                .y(d=>yScale(d.semifinals));
+            
+            d3.select("svg")
+                .append("path")
+                .attr("d",tweetLine1(data))
+                .attr("fill","none")
+                .attr("stroke","blue")
+                .attr("stroke-width",2);
+            
+            function semifinals(d,i){
+                d3.select(this).transition()
+                .duration('50')
+                .attr('opacity','.65')
+                 
+                
+                div.transition()
+                    .duration(100)
+                    .style("opacity",1);
+                
+                div.html(" " +d.Team+" \n "+ d.semifinals)
+                    .style("left","68%")
+                    .style("background-color","blue")
+                    .style("top","25%");
+            }
+            
+            function wins(d,i){
+                d3.select(this).transition()
+                .duration('50')
+                .attr('opacity','.65');
+                
+                div.transition()
+                    .duration(100)
+                    .style("opacity",1);
+                
+                div.html(" " +d.Team +" \n "+ d.Wins)
+                    .style("left","68%")
+                    .style("background-color","orange")
+                    .style("top","25%");
+            }
+            
+            function final(d,i){
+                d3.select(this).transition()
+                .duration('50')
+                .attr('opacity','.65');
+                
+                div.transition()
+                    .duration(100)
+                    .style("opacity",1);
+                
+                div.html(" " +d.Team +" \n "+ d.final)
+                    .style("left","68%")
+                    .style("background-color","red")
+                    .style("top","25%");
+            }
+            var tweetLine2 = d3.line()
+                .x(d=>xScale(d.Rank))
+                .y(d=>yScale(d.final));
+            
+            d3.select("svg")
+                .append("path")
+                .attr("d",tweetLine2(data))
+                .attr("fill","none")
+                .attr("stroke","red")
+                .attr("stroke-width",2);
+        }
+        
+        
+        
+    </script>
+</html>

@@ -1,0 +1,52 @@
+
+div.tooltip {	
+    position: absolute;			
+    text-align: center;			
+    width: 250px;					
+    height: 88px;					
+    padding: 10px;
+    
+    font: 32px sans-serif;		
+    background: rgb(3, 169, 244);	
+    border: 0px;		
+    color: #ffffff;
+    border-radius: 8px;			
+    pointer-events: none;			
+}
+h2{
+    margin-top: 25px;
+    margin-left: 30px;
+    text-align: center;
+}
+#viz{
+    margin-left: 200px;
+    margin-top: 150px;
+}
+#button{
+    margin-top: 50px;
+    margin-left: 200px;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+}
+
+li {
+  float: left;
+}
+
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+li a:hover {
+  background-color: #111;
+}

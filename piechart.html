@@ -1,0 +1,117 @@
+<!--Mikipatel - 8622608-->
+
+<!doctype html>
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://d3js.org/d3.v4.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../data/style.css">    
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.21.0/d3-legend.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body>
+    <!-- tag styles -->
+    <ul>
+      <li><a class="active" href="line.html">World Cup</a></li>
+        <li><a href="line.html">Line Graph</a></li>    
+      <li><a href="piechart.html">PieChart</a></li>
+      <li><a href="map.html">Map</a></li>
+      <li><a href="nestedtree.html">NestedTree</a></li>
+      <li><a href="network.html">Network</a></li>    
+    </ul>
+    <div><h2>PieChart for Countries won the matchs in 2011 and 2015</h2></div>
+    <svg>
+    </svg>
+     
+    <div id="my_dataviz"></div>
+    <button onclick="update(data1)">Data 2011</button>
+    <button onclick="update(data2)">Data 2015</button>
+      
+     
+</body>
+    <script>
+       // set the dimensions and margins of the graph
+        var width = 450
+            height = 450
+            margin = 40
+
+        // The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
+        var radius = Math.min(width, height) / 2 - margin
+
+        // append the svg object to the div called 'my_dataviz'
+        var svg = d3.select("#my_dataviz")
+          .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+          .append("g")
+            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+        // create 2 data_set
+        var data1 = {India: 30, Aus: 20, Pakistan:9, SriLanka:8, Afganistan:12,Bangladesh:2}
+        var data2 = {India: 20, Aus: 16, Pakistan:6, SriLanka:14, Afganistan:19, Bangladesh:12}
+
+        // set the color scale
+        var color = d3.scaleOrdinal()
+          .domain(["India", "Aus", "Pakistan", "SriLanka", "Afganistan", "Bangladesh"])
+          .range(["blue","green","black","pink","orange","skyblue"]);
+        
+        var legend = d3.legendColor().scale(color) 
+        d3.select("svg")
+           .attr("width","800px")
+           .append("g")
+           .attr("transform","translate(400,50)")
+           .call(legend);
+
+        // A function that create / update the plot for a given variable:
+        function update(data) {
+
+          // Compute the position of each group on the pie:
+          var pie = d3.pie()
+            .value(function(d) {return d.value; })
+            .sort(function(a, b) { console.log(a) ; return d3.ascending(a.key, b.key);} ) // This make sure that group order remains the same in the pie chart
+          var data_ready = pie(d3.entries(data))
+
+          // map to data
+          var u = svg.selectAll("path")
+            .data(data_ready)
+
+          // Build the pie chart: Basically, each part of the pie is a path that we build using the arc function.
+          u
+            .enter()
+            .append('path')
+            .merge(u)
+            .transition()
+            .duration(1000)
+            .attr('d', d3.arc()
+              .innerRadius(0)
+              .outerRadius(radius)
+            )
+            .attr('fill', function(d){ return(color(d.data.key)) })
+            .attr("stroke", "white")
+            .style("stroke-width", "2px")
+            .style("opacity", 1)
+            
+            
+
+          // remove the group that is not present anymore
+          u
+            .exit()
+            .remove()
+
+        }
+
+        // Initialize the plot with the first dataset
+        update(data1)
+        
+        
+       
+       
+
+    </script>
+</html>
